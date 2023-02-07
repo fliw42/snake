@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Snake : MonoBehaviour
 {
@@ -24,6 +25,33 @@ public class Snake : MonoBehaviour
     {
         Move();
         Rotate();
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Apple"))
+        {
+            LinkedListNode<Transform> last = _tailesLinked.Last;
+            _tailesLinked.RemoveLast();
+            LinkedListNode<Transform> body = _tailesLinked.Last;
+            Transform newTransform = Instantiate(body.Value, body.Value.position - body.Value.forward * _len, body.Value.rotation);
+            last.Value.position -= body.Value.forward * _len;
+            _tailesLinked.AddLast(newTransform);
+            _tailesLinked.AddLast(last);
+            var position = new Vector3(Random.Range(-2f, 12.4f), 0.5f, Random.Range(15f, -24.6f));
+
+            // что, где, какой-поворот
+            Instantiate(other.gameObject, position, Quaternion.identity);
+            Destroy(other.gameObject);
+        }
+
+        if (other.gameObject.CompareTag("Wall"))
+        {
+            foreach (var t in _tailesLinked)
+            {
+                Destroy(t.gameObject);
+            }
+        }
     }
 
     private void Move()
